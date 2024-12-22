@@ -1,9 +1,10 @@
-from fastapi import FastAPI
-import aiofiles
+from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
-from routes.words import router as words_router
+from typing import Dict, List, Tuple
+import aiofiles
 
-app = FastAPI()
+from config import settings as app_config
+from routes.words import router as words_router
 
 
 async def load_words(file_path: str):
@@ -11,7 +12,7 @@ async def load_words(file_path: str):
     Asynchronously load words from a file
     and group them by their sorted character tuple.
     """
-    word_dict = {}
+    word_dict: Dict[Tuple[str, ...], List[str]] = {}
     async with aiofiles.open(file_path, mode='r') as file:
         async for line in file:
             word = line.strip()
@@ -26,10 +27,11 @@ async def lifespan(app: FastAPI):
     yield
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(lifespan=lifespan)
-    app.include_router(words_router)
+app = FastAPI(lifespan=lifespan)
 
-    return app
+api_router = APIRouter()
+api_router.include_router(words_router, tags=["Word"])
 
-app = create_app()
+app.include_router(api_router,
+                   prefix=f'/api/{app_config.API_VERSION}'
+                   )
