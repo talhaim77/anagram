@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
 from typing import Dict, List, Tuple
 import aiofiles
+import os
 
 from config import settings as app_config
 from routes.words import router as words_router
@@ -23,7 +24,12 @@ async def load_words(file_path: str):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.word_dict = await load_words('dataset/words_dataset.txt')
+    """
+        Manage the application lifespan, including setting up the word dictionary.
+        The dataset file path can be configured via the WORDS_DATASET_PATH environment variable.
+        """
+    dataset_path = os.getenv("WORDS_DATASET_PATH", "dataset/words_dataset.txt")
+    app.state.word_dict = await load_words(dataset_path)
     yield
 
 
