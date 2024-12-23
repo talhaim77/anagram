@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,8 +10,11 @@ from backend.schemas.word_schemas import SimilarWordsResponse
 router = APIRouter()
 
 
-@router.get("/similar/{word}", response_model=SimilarWordsResponse)
-async def get_similar_words(word: str, db: AsyncSession = Depends(get_db_session)):
+@router.get("/similar", response_model=SimilarWordsResponse)
+async def get_similar_words(
+        word: str = Query(...),
+        db: AsyncSession = Depends(get_db_session)
+):
     """
     Retrieve all words in the dataset that share the same sorted character tuple as the given word.
 
@@ -34,11 +37,11 @@ async def get_similar_words(word: str, db: AsyncSession = Depends(get_db_session
     )
     try:
         result = await db.execute(statement)
-        words = result.scalars().all()
+        similar = result.scalars().all()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database query failed: {e}")
 
-    if not words:
+    if not similar:
         raise HTTPException(status_code=404, detail="Similar words not found")
 
-    return SimilarWordsResponse(words=list(words))
+    return SimilarWordsResponse(similar=list(similar))

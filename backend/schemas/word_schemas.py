@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 class SimilarWordsResponse(BaseModel):
-    words: List[str]
+    similar: List[str]
 
     class Config:
         from_attributes = True
