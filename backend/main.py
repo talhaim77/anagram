@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
-from backend.config import settings as app_config
+from backend.settings import settings as app_config
 from backend.lib.lifespan import lifespan
-from backend.routes.words import router as words_router
+from backend.api.word_route import router as words_router
 
 
 

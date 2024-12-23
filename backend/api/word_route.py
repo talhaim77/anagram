@@ -1,16 +1,16 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database.models import Word
+from backend.models.word import Word
 from backend.dependencies import get_db_session
+from backend.schemas.word_schemas import SimilarWordsResponse
 
 router = APIRouter()
 
 
-@router.get("/similar/{word}", response_model=List[str])
+@router.get("/similar/{word}", response_model=SimilarWordsResponse)
 async def get_similar_words(word: str, db: AsyncSession = Depends(get_db_session)):
     """
     Retrieve all words in the dataset that share the same sorted character tuple as the given word.

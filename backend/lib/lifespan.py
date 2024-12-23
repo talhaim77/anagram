@@ -5,11 +5,11 @@ from typing import Optional
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine
 
-from backend.config import settings
+from backend.settings import settings
 from backend.database.connection import setup_db_engine
 from backend.database.db_utils import initialize_tables, load_word_dataset
 
-from backend.dependencies import get_db_session
+from backend.dependencies import get_db_session_app
 
 
 class AppState:
@@ -71,5 +71,5 @@ async def _load_words_dataset(app: FastAPI) -> None:
     print(settings.CURRENT_FILE)
     words_dataset_path = settings.CURRENT_FILE.parent / "dataset/words_dataset.txt"
 
-    async with get_db_session(app=app) as db_session:
+    async with get_db_session_app(app) as db_session:
         await load_word_dataset(dataset_path=words_dataset_path, db_session=db_session)

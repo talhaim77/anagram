@@ -1,11 +1,8 @@
 import psycopg2
-from backend.config import settings
+from backend.settings import settings
 from sqlalchemy.ext.asyncio import  create_async_engine, async_sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI
-
-
-DATABASE_URI = "postgresql+asyncpg://postgres:root@pg_db/anagram"
 
 
 async def setup_db_engine(app: FastAPI) -> None:
@@ -18,8 +15,7 @@ async def setup_db_engine(app: FastAPI) -> None:
     from sqlalchemy.sql import text
 
     engine = create_async_engine(
-        # str(settings.SQLALCHEMY_DATABASE_URI),
-        DATABASE_URI,
+        str(settings.SQLALCHEMY_DATABASE_URI),
         echo=False,
     )
     session_factory = async_sessionmaker(

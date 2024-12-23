@@ -4,33 +4,48 @@ from typing import Optional
 from contextlib import asynccontextmanager
 
 
-@asynccontextmanager
-async def get_db_session(request: Optional[Request] = None,
-                         app: Optional[FastAPI] = None
-                         ) -> AsyncSession:
+# backend/dependencies.py
+
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+from fastapi import Request
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """
-    This function yields an asynchronous db session. It determines the session
-    factory from either the FastAPI request object or the application instance.
+    Dependency that provides a database session using the Request object.
 
     Args:
-        request (Optional[Request]): FastAPI request object (for HTTP contexts).
-        app (Optional[FastAPI]): FastAPI application instance (for non-HTTP contexts).
+        request (Request): FastAPI request object.
 
-    Returns:
+    Yields:
         AsyncSession: An instance of the SQLAlchemy asynchronous session.
-
-    Raises:
-        ValueError: If neither `request` nor `app` is provided.
     """
-    if request:
-        session_factory = request.app.state.db_session_factory
-    elif app:
-        session_factory = app.state.db_session_factory
-    else:
-        raise ValueError("At least one of request and app must be provided.")
-
+    session_factory = request.app.state.db_session_factory
     session: AsyncSession = session_factory()
+    try:
+        yield session
+    except Exception as e:
+        await session.rollback()
+        raise e
+    finally:
+        await session.close()
 
+
+@asynccontextmanager
+async def get_db_session_app(app: FastAPI) -> AsyncGenerator[AsyncSession, None]:
+    """
+    Dependency that provides a database session using the FastAPI application instance.
+
+    Args:
+        app (FastAPI): FastAPI application instance.
+
+    Yields:
+        AsyncSession: An instance of the SQLAlchemy asynchronous session.
+    """
+    session_factory = app.state.db_session_factory
+    session: AsyncSession = session_factory()
     try:
         yield session
     except Exception as e:

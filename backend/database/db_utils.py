@@ -2,9 +2,9 @@ from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncEngine
 from fastapi import Depends
-from backend.database.models import Word
+from backend.models.word import Word
 from backend.dependencies import get_db_session
-from backend.database.models import Base
+from backend.models.word import Base
 
 
 async def initialize_tables(engine: AsyncEngine) -> None:
