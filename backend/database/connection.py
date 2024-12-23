@@ -1,5 +1,27 @@
 import psycopg2
-from backend.config import settings as app_config
+from backend.config import settings
+from sqlalchemy.ext.asyncio import  create_async_engine, async_sessionmaker
+from fastapi import FastAPI
+
+
+async def setup_db_engine(app: FastAPI) -> None:
+    """
+    Set up the database engine and session factory.
+
+    This function configures the SQLAlchemy asynchronous engine and session factory
+    and stores them in the application state.
+    """
+    engine = create_async_engine(
+        str(settings.SQLALCHEMY_DATABASE_URI),
+        echo=False,
+    )
+    session_factory = async_sessionmaker(
+        engine,
+        expire_on_commit=False,
+    )
+
+    app.state.db_engine = engine
+    app.state.db_session_factory = session_factory
 
 
 def get_connection():
@@ -7,10 +29,10 @@ def get_connection():
     Returns a new database connection using credentials from environment variables.
     """
     conn = psycopg2.connect(
-        host=app_config.DB_HOST,
-        dbname=app_config.DB_NAME,
-        user=app_config.DB_USER,
-        password=app_config.DB_PASSWORD
+        host=settings.DB_HOST,
+        dbname=settings.DB_NAME,
+        user=settings.DB_USER,
+        password=settings.DB_PASSWORD
     )
     try:
         yield conn
