@@ -1,7 +1,11 @@
 import psycopg2
 from backend.config import settings
 from sqlalchemy.ext.asyncio import  create_async_engine, async_sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI
+
+
+DATABASE_URI = "postgresql+asyncpg://postgres:root@pg_db/anagram"
 
 
 async def setup_db_engine(app: FastAPI) -> None:
@@ -11,14 +15,26 @@ async def setup_db_engine(app: FastAPI) -> None:
     This function configures the SQLAlchemy asynchronous engine and session factory
     and stores them in the application state.
     """
+    from sqlalchemy.sql import text
+
     engine = create_async_engine(
-        str(settings.SQLALCHEMY_DATABASE_URI),
+        # str(settings.SQLALCHEMY_DATABASE_URI),
+        DATABASE_URI,
         echo=False,
     )
     session_factory = async_sessionmaker(
         engine,
         expire_on_commit=False,
     )
+
+    try:
+        async with engine.connect() as conn:
+            print("Testing database connection...")
+            await conn.execute(text("SELECT 1"))
+            print("Database connection successful!")
+    except SQLAlchemyError as e:
+        print(f"Database connection failed: {e}")
+        raise
 
     app.state.db_engine = engine
     app.state.db_session_factory = session_factory

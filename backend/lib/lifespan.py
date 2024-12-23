@@ -68,9 +68,8 @@ async def _load_words_dataset(app: FastAPI) -> None:
     """
     Load the words dataset into the database.
     """
-    words_dataset_path = settings.CURRENT_FILE.parent.parent / "dataset/words_dataset.txt"
-    db_session = get_db_session(app=app)
-    try:
+    print(settings.CURRENT_FILE)
+    words_dataset_path = settings.CURRENT_FILE.parent / "dataset/words_dataset.txt"
+
+    async with get_db_session(app=app) as db_session:
         await load_word_dataset(dataset_path=words_dataset_path, db_session=db_session)
-    finally:
-        await db_session.close()

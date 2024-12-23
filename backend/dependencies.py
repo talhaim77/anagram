@@ -1,7 +1,10 @@
 from fastapi import Request, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
+from contextlib import asynccontextmanager
 
+
+@asynccontextmanager
 async def get_db_session(request: Optional[Request] = None,
                          app: Optional[FastAPI] = None
                          ) -> AsyncSession:

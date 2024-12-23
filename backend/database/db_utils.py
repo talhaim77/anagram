@@ -18,6 +18,7 @@ async def initialize_tables(engine: AsyncEngine) -> None:
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        print("Connection test successful")
 
 
 async def load_word_dataset(dataset_path: Path, db_session = Depends(get_db_session)):

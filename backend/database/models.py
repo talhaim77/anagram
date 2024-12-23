@@ -14,4 +14,4 @@ class Word(Base):
     __tablename__ = 'words'
 
     word = Column(String, primary_key=True, nullable=False)
-    sorted_word = Column(String, nullable=False)
+    sorted_word = Column(String, nullable=False, index=True)
