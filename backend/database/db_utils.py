@@ -1,10 +1,18 @@
 from pathlib import Path
 
+import aiofiles
 from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import select, func
 from fastapi import Depends
 from backend.models.word import Word
 from backend.dependencies import get_db_session
 from backend.models.word import Base
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+CHUNK_SIZE = 1000
 
 
 async def initialize_tables(engine: AsyncEngine) -> None:
@@ -36,15 +44,46 @@ async def load_word_dataset(dataset_path: Path, db_session = Depends(get_db_sess
         Exception: If an error occurs while loading the dataset.
     """
     try:
-        with open(dataset_path, 'r') as f:
-            words = [line.strip() for line in f.readlines()]
+        async with aiofiles.open(dataset_path, 'r') as f:
+            words = [line.strip().lower() async for line in f if line.strip()]  # type: ignore
 
-        for word in words:
-            sorted_word = ''.join(sorted(word))
-            db_session.add(Word(word=word, sorted_word=sorted_word))
+        total_words = len(words)
 
-        await db_session.commit()
-        print("Dataset loaded into Word table.")
+        # similar to sql: SELECT COUNT(*) FROM Word;
+        stmt = select(func.count()).select_from(Word)
+        result = await db_session.execute(stmt)
+        word_count = result.scalar_one()
+
+        if word_count >= total_words:
+            logger.info("Word table already populated. Skipping dataset load.")
+            return
+
+        logger.info(f"Loading words dataset from: {dataset_path}")
+
+        # Fetch existing words from the database
+        existing_words = set()
+        for i in range(0, len(words), CHUNK_SIZE):
+            chunk = words[i:i + CHUNK_SIZE]
+            stmt = select(Word.word).where(Word.word.in_(chunk))
+            result = await db_session.execute(stmt)
+            existing_words.update(result.scalars().all())
+
+        new_words = [
+            Word(word=word,
+                 sorted_word=''.join(sorted(word))
+            )
+            for word in words
+            if word not in existing_words
+        ]
+
+        if new_words:
+            db_session.add_all(new_words)
+            await db_session.commit()
+            logger.info(f"{len(new_words)} new words added to the Word table.")
+        else:
+            logger.info("No new words to add. All words already exist.")
+
     except Exception as e:
-        print(f"Error loading dataset: {e}")
         await db_session.rollback()
+        print(f"Error loading word dataset: {e}")
+        raise

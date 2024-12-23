@@ -10,6 +10,9 @@ from backend.database.connection import setup_db_engine
 from backend.database.db_utils import initialize_tables, load_word_dataset
 
 from backend.dependencies import get_db_session_app
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AppState:
@@ -47,7 +50,7 @@ async def _startup_db(app: FastAPI) -> None:
         await initialize_tables(engine=app.state.db_engine)
         await _load_words_dataset(app=app)
     except Exception as e:
-        print(f"Error during database startup: {e}")
+        # todo: logging
         raise
 
 
@@ -66,9 +69,8 @@ async def _shutdown_db(app: FastAPI) -> None:
 
 async def _load_words_dataset(app: FastAPI) -> None:
     """
-    Load the words dataset into the database.
+    Load the words dataset into the database if the Word table is empty.
     """
-    print(settings.CURRENT_FILE)
     words_dataset_path = settings.CURRENT_FILE.parent / "dataset/words_dataset.txt"
 
     async with get_db_session_app(app) as db_session:
