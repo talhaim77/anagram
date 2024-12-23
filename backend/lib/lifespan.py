@@ -1,0 +1,103 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from typing import Optional
+
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncEngine
+
+from backend.config import settings
+from backend.database.db_utils import initialize_tables, load_word_dataset
+
+from backend.dependencies import get_db_session
+
+
+class AppState:
+    db_engine: Optional[AsyncEngine] = None
+    db_session_factory: Optional[async_sessionmaker] = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator:
+    """
+    Context manager for managing the application lifespan.
+
+    This function initializes resources on startup and cleans up on shutdown.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+
+    """
+    try:
+        await _startup_db(app)
+        yield
+    finally:
+        await _shutdown_db(app)
+
+
+async def _startup_db(app: FastAPI) -> None:
+    """
+    Perform startup tasks related to the db.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+    """
+    try:
+        await _setup_db_engine(app)
+        await _initialize_tables(app)
+        await _load_words_dataset(app)
+    except Exception as e:
+        print(f"Error during database startup: {e}")
+        raise
+
+
+async def _shutdown_db(app: FastAPI) -> None:
+    """
+    Perform shutdown tasks related to the db.
+    Args:
+        app: The FastAPI application instance.
+    """
+    try:
+        if app.state.db_engine:
+            await app.state.db_engine.dispose()
+    except Exception as e:
+        print(f"Error during database shutdown: {e}")
+
+
+async def _setup_db_engine(app: FastAPI) -> None:
+    """
+    Set up the database engine and session factory.
+
+    This function configures the SQLAlchemy asynchronous engine and session factory
+    and stores them in the application state.
+    """
+    engine = create_async_engine(
+        str(settings.SQLALCHEMY_DATABASE_URI),
+        echo=False,
+    )
+    session_factory = async_sessionmaker(
+        engine,
+        expire_on_commit=False,
+    )
+
+    app.state.db_engine = engine
+    app.state.db_session_factory = session_factory
+
+
+async def _initialize_tables(app: FastAPI) -> None:
+    """
+    Initialize the db tables.
+    """
+    engine = app.state.db_engine
+    await initialize_tables(engine)
+
+
+async def _load_words_dataset(app: FastAPI) -> None:
+    """
+    Load the words dataset into the database.
+    """
+    words_dataset_path = settings.CURRENT_FILE.parent.parent / "dataset/words_dataset.txt"
+    db_session = get_db_session(app=app)
+    try:
+        await load_word_dataset(dataset_path=words_dataset_path, db_session=db_session)
+    finally:
+        await db_session.close()

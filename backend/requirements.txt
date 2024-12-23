@@ -11,3 +11,4 @@ typing_extensions==4.12.2
 aiofiles==24.1.0
 pydantic-settings==2.7.0
 psycopg2-binary
+sqlalchemy==2.0.36
