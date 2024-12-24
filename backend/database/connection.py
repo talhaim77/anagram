@@ -1,6 +1,9 @@
-import psycopg2
 from backend.settings import settings
-from sqlalchemy.ext.asyncio import  create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import  (
+    create_async_engine,
+    async_sessionmaker,
+    AsyncSession
+)
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI
 from sqlalchemy.ext.declarative import declarative_base
@@ -23,6 +26,7 @@ async def setup_db_engine(app: FastAPI) -> None:
     )
     session_factory = async_sessionmaker(
         engine,
+        class_=AsyncSession,
         expire_on_commit=False,
     )
 
@@ -43,6 +47,7 @@ def get_connection():
     """
     Returns a new database connection using credentials from environment variables.
     """
+    import psycopg2
     conn = psycopg2.connect(
         host=settings.DB_HOST,
         dbname=settings.DB_NAME,

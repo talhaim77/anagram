@@ -95,21 +95,21 @@ async def fetch_similar_words(word: str, db: AsyncSession):
     status_code=status.HTTP_200_OK,
     summary="Add a new word to the database")
 async def add_word(
-    add_word: AddWordRequest,
+    add_word_request: AddWordRequest,
     db: AsyncSession = Depends(get_db_session)
 ):
     """
     Adds a new word to the dictionary for future queries.
 
     Args:
-        add_word (AddWordRequest): The word to add.
+        add_word_request (AddWordRequest): The word to add.
         db (AsyncSession): db session.
 
     Returns:
         AddWordResponse: Success message.
     """
 
-    word_to_store = add_word.word.strip().lower()
+    word_to_store = add_word_request.word.strip().lower()
     sorted_word = str(''.join(sorted(word_to_store)))
     new_word = Word(word=word_to_store, sorted_word=sorted_word)
     try:
@@ -119,7 +119,16 @@ async def add_word(
         await db.refresh(new_word)
         end_time = time()
     except IntegrityError:
+        end_time = time()
         await db.rollback()
+
+        processing_time = (end_time - start_time) * 1_000_000
+        await log_request(
+            endpoint=f"/api/{app_config.API_VERSION}/add-word",
+            processing_time=processing_time,
+            db=db
+        )
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Word already exists in database"
@@ -136,5 +145,5 @@ async def add_word(
         db=db
     )
 
-    return AddWordResponse(message=f"Word: {add_word.word} added successfully")
+    return AddWordResponse(message=f"Word: {add_word_request.word} added successfully")
 
