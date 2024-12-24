@@ -1,6 +1,9 @@
 
 from typing import List
 from pydantic import BaseModel, Field
+from os import getenv
+
+WORD_MAX_LENGTH = int(getenv("WORD_MAX_LENGTH", 100))
 
 class SimilarWordsResponse(BaseModel):
     similar: List[str]

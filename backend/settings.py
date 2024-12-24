@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     API_VERSION: str = 'v1'
 
     CURRENT_FILE: Path = Path(__file__)
+    WORD_MAX_LENGTH: str = 100
 
     # Database Configuration
     POSTGRES_HOST: str = ""
