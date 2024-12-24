@@ -3,7 +3,10 @@ from backend.settings import settings
 from sqlalchemy.ext.asyncio import  create_async_engine, async_sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI
+from sqlalchemy.ext.declarative import declarative_base
 
+# Define Base for models
+Base = declarative_base()
 
 async def setup_db_engine(app: FastAPI) -> None:
     """
