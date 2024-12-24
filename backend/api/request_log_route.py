@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import Optional
@@ -49,47 +49,35 @@ async def get_stats(
         query_words = await db.execute(select(func.count(Word.word)))
         total_words = query_words.scalar() or 0
 
+        try:
+            total_requests_endpoint = await db.execute(
+                select(func.count(RequestLog.id).label("total_requests"))
+                .where(RequestLog.endpoint == similar_endpoint)
+                .where(RequestLog.timestamp >= from_date if from_date else True)
+                .where(RequestLog.timestamp <= to_date if to_date else True)
+            )
+            total_request_object = total_requests_endpoint.first()
+            total_requests = total_request_object.total_requests if total_request_object.total_requests else 0
+        except (TypeError, ValueError):
+            total_requests = 0
 
-        query_total_request = select(
-            func.count(RequestLog.id).label("total_requests"),
-        ).where(RequestLog.endpoint == similar_endpoint)
-
-        query_avg_request = select(
-            func.avg(RequestLog.processing_time).label("avg_processing_time")
-        )
-
-        if from_date or to_date:
-            if from_date and from_date.tzinfo is None:
-                from_date = from_date.replace(tzinfo=timezone.utc)
-            if to_date and to_date.tzinfo is None:
-                to_date = to_date.replace(tzinfo=timezone.utc)
-
-            if from_date and to_date and from_date > to_date:
-                raise HTTPException(
-                    status_code=400, detail="'from' date must be earlier than 'to' date"
-                )
-
-            if from_date:
-                query_total_request = query_total_request.where(RequestLog.timestamp >= from_date)
-                query_avg_request = query_avg_request.where(RequestLog.timestamp >= from_date)
-            if to_date:
-                query_total_request = query_total_request.where(RequestLog.timestamp <= to_date)
-                query_avg_request = query_avg_request.where(RequestLog.timestamp <= to_date)
-
-        total_requests_endpoint = await db.execute(query_total_request)
-        total_request_object = total_requests_endpoint.first()
-        avg_time_endpoint = await db.execute(query_avg_request)
-        avg_time_object = avg_time_endpoint.first()
-
-
-        total_requests = total_request_object.total_requests
-        avg_processing_time_microsec = avg_time_object.avg_processing_time
+        try:
+            avg_time_endpoint = await db.execute(
+                select(func.avg(RequestLog.processing_time).label("avg_processing_time"))
+                .where(RequestLog.timestamp >= from_date if from_date else True)
+                .where(RequestLog.timestamp <= to_date if to_date else True)
+            )
+            avg_time_object = avg_time_endpoint.first()
+            avg_processing_time_ms = avg_time_object.avg_processing_time if avg_time_object.avg_processing_time else 0
+        except (TypeError, ValueError):
+            avg_processing_time_ms = 0
 
         return {
             "totalWords": total_words,
             "totalRequests": total_requests,
-            "avgProcessingTimeNs": int(avg_processing_time_microsec),
+            "avgProcessingTimeMs": int(avg_processing_time_ms),
         }
+
 
     except Exception as e:
         raise HTTPException(
