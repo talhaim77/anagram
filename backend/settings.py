@@ -1,6 +1,6 @@
 from typing import Optional, Any
 from pathlib import Path
-from pydantic import PostgresDsn, field_validator, ValidationError
+from pydantic import PostgresDsn, field_validator, ValidationError, Field
 from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings
 import logging
@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     CURRENT_FILE: Path = Path(__file__)
 
     # Database Configuration
-    DB_HOST: str = "localhost"
-    DB_NAME: str = "anagram_db"
+    POSTGRES_HOST: str = ""
+    POSTGRES_DB: str = ""
     POSTGRES_USER: str = ""
     POSTGRES_PASSWORD: str = ""
 

@@ -56,13 +56,13 @@ async def get_similar_words(
 async def log_request(endpoint, processing_time, db):
     log = RequestLog(
         endpoint=endpoint,
-        timestamp=datetime.now(tz=timezone.utc),
         processing_time=processing_time,
     )
     try:
         db.add(log)
         await db.commit()
         await db.refresh(log)
+        print(f"log_request: {endpoint} successfully")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Failed to log the request: {e}")
@@ -113,9 +113,11 @@ async def add_word(
     sorted_word = str(''.join(sorted(word_to_store)))
     new_word = Word(word=word_to_store, sorted_word=sorted_word)
     try:
+        start_time = time()
         db.add(new_word)
         await db.commit()
         await db.refresh(new_word)
+        end_time = time()
     except IntegrityError:
         await db.rollback()
         raise HTTPException(
@@ -125,6 +127,14 @@ async def add_word(
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to add word: {e}")
+
+    processing_time = (end_time - start_time) * 1_000_000
+
+    await log_request(
+        endpoint=f"/api/{app_config.API_VERSION}/add-word",
+        processing_time=processing_time,
+        db=db
+    )
 
     return AddWordResponse(message=f"Word: {add_word.word} added successfully")
 
