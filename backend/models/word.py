@@ -2,7 +2,7 @@ from os import getenv
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.database.connection import Base
+from database.connection import Base
 
 
 WORD_MAX_LENGTH = int(getenv("WORD_MAX_LENGTH", 100))

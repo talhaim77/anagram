@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, DateTime, Float
 from sqlalchemy.orm import mapped_column, Mapped
 
-from backend.database.connection import Base
+from database.connection import Base
 from datetime import datetime, timezone
 
 class RequestLog(Base):

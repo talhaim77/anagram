@@ -1,19 +1,19 @@
 from datetime import datetime, timezone
 
 from time import time
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy import select, DateTime, Column
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from backend.models.request_log import RequestLog
-from backend.models.word import Word
-from backend.dependencies import get_db_session
-from backend.schemas.word_schemas import SimilarWordsResponse, AddWordResponse, AddWordRequest
-from backend.settings import settings as app_config
-from backend.utils.string_utils import compute_letter_frequency
+from models.request_log import RequestLog
+from models.word import Word
+from dependencies import get_db_session
+from schemas.word_schemas import SimilarWordsResponse, AddWordResponse, AddWordRequest
+from settings import settings as app_config
+from utils.string_utils import compute_letter_frequency
 
 router = APIRouter()
 
@@ -48,7 +48,8 @@ async def get_similar_words(
     await log_request(
         endpoint=f"/api/{app_config.API_VERSION}/similar",
         processing_time=processing_time,
-        db=db
+        db=db,
+        word=word
     )
 
     return SimilarWordsResponse(similar=list(similar))
@@ -91,7 +92,8 @@ async def add_word(
         await log_request(
             endpoint=f"/api/{app_config.API_VERSION}/add-word",
             processing_time=processing_time,
-            db=db
+            db=db,
+            word=word_to_store
         )
 
         raise HTTPException(
@@ -138,10 +140,11 @@ async def fetch_similar_words(word: str, db: AsyncSession):
     return similar, processing_time
 
 
-async def log_request(endpoint, processing_time, db):
+async def log_request(endpoint, processing_time, db, word: Optional[str] = None):
     log = RequestLog(
         endpoint=endpoint,
         processing_time=processing_time,
+        word=word,
     )
     try:
         db.add(log)

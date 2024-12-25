@@ -1,8 +1,8 @@
 from fastapi import FastAPI, APIRouter
-from backend.settings import settings as app_config
-from backend.lib.lifespan import lifespan
-from backend.api.word_router import router as words_router
-from backend.api.request_log_route import router as stats_router
+from settings import settings as app_config
+from lib.lifespan import lifespan
+from api.word_router import router as words_router
+from api.request_log_router import router as stats_router
 
 
 app = FastAPI(

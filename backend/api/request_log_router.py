@@ -2,13 +2,13 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import Optional
-from backend.models.request_log import RequestLog
-from backend.models.word import Word
-from backend.dependencies import get_db_session
+from models.request_log import RequestLog
+from models.word import Word
+from dependencies import get_db_session
 from fastapi import APIRouter, HTTPException, Depends, Query, status
 from fastapi.responses import JSONResponse
 
-from backend.settings import settings
+from settings import settings
 
 router = APIRouter()
 

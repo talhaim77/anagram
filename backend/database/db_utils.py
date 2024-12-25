@@ -4,10 +4,12 @@ import aiofiles
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import select, func
 from fastapi import Depends
-from backend.models.word import Word
-from backend.dependencies import get_db_session
-from backend.models.word import Base
+from models.word import Word
+from dependencies import get_db_session
+from models.word import Base
 import logging
+
+from utils.string_utils import compute_letter_frequency
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,7 +72,7 @@ async def load_word_dataset(dataset_path: Path, db_session = Depends(get_db_sess
 
         new_words = [
             Word(word=word,
-                 sorted_word=''.join(sorted(word))
+                 signature=compute_letter_frequency(word)
             )
             for word in words
             if word not in existing_words

@@ -5,11 +5,11 @@ from typing import Optional
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine
 
-from backend.settings import settings
-from backend.database.connection import setup_db_engine
-from backend.database.db_utils import initialize_tables, load_word_dataset
+from settings import settings
+from database.connection import setup_db_engine
+from database.db_utils import initialize_tables, load_word_dataset
 
-from backend.dependencies import get_db_session_app
+from dependencies import get_db_session_app
 import logging
 
 logger = logging.getLogger(__name__)

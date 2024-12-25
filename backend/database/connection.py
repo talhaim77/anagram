@@ -1,4 +1,4 @@
-from backend.settings import settings
+from settings import settings
 from sqlalchemy.ext.asyncio import  (
     create_async_engine,
     async_sessionmaker,
@@ -7,6 +7,9 @@ from sqlalchemy.ext.asyncio import  (
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI
 from sqlalchemy.orm import DeclarativeBase
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Define Base for models
 class Base(DeclarativeBase):
@@ -26,6 +29,7 @@ async def setup_db_engine(app: FastAPI) -> None:
         str(settings.SQLALCHEMY_DATABASE_URI),
         echo=False,
     )
+
     session_factory = async_sessionmaker(
         engine,
         class_=AsyncSession,
@@ -34,11 +38,11 @@ async def setup_db_engine(app: FastAPI) -> None:
 
     try:
         async with engine.connect() as conn:
-            print("Testing database connection...")
+            logger.info("Testing database connection...")
             await conn.execute(text("SELECT 1"))
-            print("Database connection successful!")
+            logger.info("Database connection successful!")
     except SQLAlchemyError as e:
-        print(f"Database connection failed: {e}")
+        logger.error(f"Database connection failed: {e}")
         raise
 
     app.state.db_engine = engine
@@ -61,14 +65,3 @@ def get_connection():
     finally:
         conn.close()
 
-
-def init_db():
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS words (
-                    word TEXT PRIMARY KEY,
-                    sorted_word TEXT
-                );
-            """)
-            conn.commit()
