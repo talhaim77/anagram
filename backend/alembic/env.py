@@ -9,8 +9,8 @@ import sys
 from pathlib import Path
 
 # Add the project's root directory to sys.path
-sys.path.append(str(Path(__file__).resolve().parents[2]))
-from backend.database.connection import Base
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from database.connection import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
