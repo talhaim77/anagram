@@ -6,10 +6,12 @@ from sqlalchemy.ext.asyncio import  (
 )
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 # Define Base for models
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
+
 
 async def setup_db_engine(app: FastAPI) -> None:
     """

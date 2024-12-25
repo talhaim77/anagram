@@ -13,6 +13,7 @@ from backend.models.word import Word
 from backend.dependencies import get_db_session
 from backend.schemas.word_schemas import SimilarWordsResponse, AddWordResponse, AddWordRequest
 from backend.settings import settings as app_config
+from backend.utils.string_utils import compute_letter_frequency
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ router = APIRouter()
             status_code=status.HTTP_200_OK,
             summary="Retrieve similar words")
 async def get_similar_words(
-        word: str = Query(...),
+        word: str = Query(..., min_length=1),
         db: AsyncSession = Depends(get_db_session)
 ):
     """
@@ -53,43 +54,6 @@ async def get_similar_words(
     return SimilarWordsResponse(similar=list(similar))
 
 
-async def log_request(endpoint, processing_time, db):
-    log = RequestLog(
-        endpoint=endpoint,
-        processing_time=processing_time,
-    )
-    try:
-        db.add(log)
-        await db.commit()
-        await db.refresh(log)
-        print(f"log_request: {endpoint} successfully")
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Failed to log the request: {e}")
-
-
-async def fetch_similar_words(word: str, db: AsyncSession):
-
-    sorted_word = ''.join(sorted(word))
-    statement = (
-        select(Word.word)
-        .where(Word.sorted_word == sorted_word)
-        .where(Word.word != word)
-    )
-    try:
-        start_time = time()
-        result = await db.execute(statement)
-        similar = result.scalars().all()
-        end_time = time()
-        processing_time = (end_time - start_time) * 1_000_000
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database query failed: {e}"
-        )
-    return similar, processing_time
-
-
 @router.post(
     "/add-word", response_model=AddWordResponse,
     status_code=status.HTTP_200_OK,
@@ -110,8 +74,9 @@ async def add_word(
     """
 
     word_to_store = add_word_request.word.strip().lower()
-    sorted_word = str(''.join(sorted(word_to_store)))
-    new_word = Word(word=word_to_store, sorted_word=sorted_word)
+    word_signature = compute_letter_frequency(word_to_store)
+
+    new_word = Word(word=word_to_store, signature=word_signature)
     try:
         start_time = time()
         db.add(new_word)
@@ -147,3 +112,42 @@ async def add_word(
 
     return AddWordResponse(message=f"Word: {add_word_request.word} added successfully")
 
+
+async def fetch_similar_words(word: str, db: AsyncSession):
+    """
+    Todo: add docstring
+    """
+    word_signature = compute_letter_frequency(word.lower().strip())
+
+    statement = (
+        select(Word.word)
+        .where(Word.signature == word_signature)
+        .where(Word.word != word)
+    )
+    try:
+        start_time = time()
+        result = await db.execute(statement)
+        similar = result.scalars().all()
+        end_time = time()
+        processing_time = (end_time - start_time) * 1_000_000
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database query failed: {e}"
+        )
+    return similar, processing_time
+
+
+async def log_request(endpoint, processing_time, db):
+    log = RequestLog(
+        endpoint=endpoint,
+        processing_time=processing_time,
+    )
+    try:
+        db.add(log)
+        await db.commit()
+        await db.refresh(log)
+        print(f"log_request: {endpoint} successfully")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Failed to log the request: {e}")
