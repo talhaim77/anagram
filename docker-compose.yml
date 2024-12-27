@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
   db:
     image: postgres:15
@@ -7,6 +8,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_MAX_CONNECTIONS: 200
+      # Set shared_buffers to 25% of system memory
+      POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER: 2
+      POSTGRES_MAX_WORKER_PROCESSES: 4
+      POSTGRES_MAX_PARALLEL_WORKERS: 4
+
     ports:
       - "5432:5432"
     volumes:
@@ -32,7 +39,22 @@ services:
       - .:/app
     command: >
       sh -c "alembic upgrade head &&
-             uvicorn main:app --host 0.0.0.0 --port 8000"
+             uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    container_name: frontend_service
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./similar-words-app:/app
+    entrypoint: [ "sh", "-c", "sleep 45 && yarn start" ]
+
 
 volumes:
   postgres-data:
