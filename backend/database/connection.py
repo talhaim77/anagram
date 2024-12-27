@@ -27,6 +27,8 @@ async def setup_db_engine(app: FastAPI) -> None:
 
     engine = create_async_engine(
         str(settings.SQLALCHEMY_DATABASE_URI),
+        pool_size=5,  # Max 5 connections per worker
+        max_overflow=10,
         echo=False,
     )
 
