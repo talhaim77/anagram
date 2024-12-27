@@ -1,19 +1,26 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: #f4f4f9;
+}
+
 .homepage {
   text-align: center;
-  padding: 20px;
   background-color: #f4f4f9;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* Align items at the top */
   align-items: center;
+  padding-top: 40px; /* Add spacing at the top */
+  gap: 20px; /* Consistent spacing between elements */
 }
 
 .homepage h1 {
   color: #007bff;
   font-size: 2.5rem;
+  font-weight: bold;
   margin-bottom: 15px;
-  font-weight: 700; /* Make it bold for emphasis */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
@@ -21,23 +28,7 @@
   font-size: 1.2rem;
   color: #555;
   max-width: 600px;
-  margin: 0 auto;
   line-height: 1.6;
   padding: 0 20px;
-}
-
-.homepage a {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  color: #fff;
-  background-color: #007bff;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-}
-
-.homepage a:hover {
-  background-color: #0056b3;
+  margin: 0;
 }

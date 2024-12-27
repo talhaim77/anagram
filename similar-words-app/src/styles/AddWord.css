@@ -8,31 +8,32 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Center vertically and horizontally */
+  justify-content: flex-start;
   height: 100vh;
   padding: 20px;
-  gap: 20px; /* Consistent spacing between elements */
+  gap: 20px;
 }
 
 .add-word-title {
-  font-size: 2.5rem; /* Larger for better visibility */
-  color: #007bff; /* Brand color */
+  font-size: 2rem;
+  color: #171411;
   font-weight: bold;
-  margin-bottom: 15px;
   text-align: center;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
+
 
 .add-word-form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px; /* Space between form elements */
+  gap: 15px;
   background: #fff;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Card-like appearance */
-  width: 400px; /* Centered and responsive width */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 400px;
 }
 
 .add-word-input {
@@ -40,38 +41,38 @@ body {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  width: 100%; /* Full width within the form */
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
+  width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .add-word-button {
   padding: 12px 24px;
-  font-size: 1.1rem; /* Slightly larger font */
+  font-size: 1.1rem;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  width: 100%; /* Full width button for consistent design */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Add depth */
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .add-word-button:hover {
   background-color: #0056b3;
-  transform: translateY(-2px); /* Slight lift effect */
+  transform: translateY(-2px);
 }
 
 .add-word-success-message {
   font-size: 1.2rem;
-  color: #28a745; /* Green for success */
+  color: #28a745;
   margin-top: 10px;
   text-align: center;
 }
 
 .add-word-error-message {
   font-size: 1.2rem;
-  color: #dc3545; /* Red for errors */
+  color: #dc3545;
   margin-top: 10px;
   text-align: center;
 }

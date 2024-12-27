@@ -1,10 +1,9 @@
 import React from 'react';
 import '../styles/HomePage.css';
 
-
 function HomePage() {
   return (
-    <div>
+    <div className="homepage">
       <h1>Welcome to Similar Words App</h1>
       <p>Use the navigation to explore features.</p>
     </div>

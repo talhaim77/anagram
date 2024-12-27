@@ -8,6 +8,7 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000
 function SimilarWords() {
   const [word, setWord] = useState('');
   const [results, setResults] = useState(null);
+  const [error, setError] = useState('');
 
   const fetchSimilarWords = async () => {
     console.log('API Base URL:', API_BASE_URL);
@@ -17,8 +18,10 @@ function SimilarWords() {
         params: { word },
       });
       setResults(response.data.similar);
+      setError(''); // Clear any previous errors
     } catch (error) {
-      alert('Error fetching similar words: ' + (error.response?.data?.detail || error.message));
+      setResults(null); // Clear results if there's an error
+      setError(error.response?.data?.detail || error.message);
     }
   };
 
@@ -36,6 +39,7 @@ function SimilarWords() {
           Search
         </button>
       </div>
+      {error && <p className="similar-words-error-message">{error}</p>}
       {results && (
         <div className="similar-words-results">
           <h2>Similar Words</h2>
