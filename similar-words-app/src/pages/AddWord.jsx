@@ -25,7 +25,13 @@ function AddWord() {
   return (
     <div className="add-word-container">
       <h1 className="add-word-title">Add a New Word</h1>
-      <form className="add-word-form" onSubmit={(e) => { e.preventDefault(); addWord(); }}>
+      <form
+        className="add-word-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          addWord();
+        }}
+      >
         <input
           type="text"
           className="add-word-input"
@@ -33,7 +39,13 @@ function AddWord() {
           onChange={(e) => setWord(e.target.value)}
           placeholder="Enter a new word"
         />
-        <button type="submit" className="add-word-button">Add Word</button>
+        <button
+          type="submit"
+          className="add-word-button"
+          disabled={!word.trim()} // Disable button if input is empty
+        >
+          Add Word
+        </button>
       </form>
       {successMessage && <p className="add-word-success-message">{successMessage}</p>}
       {errorMessage && <p className="add-word-error-message">{errorMessage}</p>}

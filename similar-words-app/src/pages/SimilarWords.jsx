@@ -35,7 +35,11 @@ function SimilarWords() {
           onChange={(e) => setWord(e.target.value)}
           placeholder="Enter a word"
         />
-        <button className="similar-words-button" onClick={fetchSimilarWords}>
+        <button
+          className="similar-words-button"
+          onClick={fetchSimilarWords}
+          disabled={!word.trim()} // Disable button if no input
+        >
           Search
         </button>
       </div>
