@@ -15,6 +15,7 @@ asyncpg
 sqlalchemy==2.0.36
 greenlet>=2.0.0
 aiofiles
-alembic
-httpx
+alembic~=1.14.0
+httpx~=0.28.1
 pytest-asyncio
+pytest~=8.3.4

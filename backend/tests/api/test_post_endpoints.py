@@ -1,5 +1,8 @@
 import pytest
 from httpx import AsyncClient
+from backend.settings import settings
+
+BASE_URL = f"http://localhost:8000/api/{settings.API_VERSION}/"
 
 
 @pytest.mark.asyncio
@@ -7,7 +10,7 @@ from httpx import AsyncClient
 async def test_add_word(word):
     payload = {"word": word}
 
-    async with AsyncClient(base_url="http://localhost:8000/api/v1") as ac:
+    async with AsyncClient(base_url=BASE_URL) as ac:
         response = await ac.post("/add-word", json=payload)
 
     if response.status_code == 200:

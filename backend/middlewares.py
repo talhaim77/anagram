@@ -20,13 +20,14 @@ origins = [
 class BackgroundMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        if "background" in request.state._state:
+        if hasattr(request.state, "background"):
             response.background = request.state.background
         return response
 
 
 def register_middlewares(app: FastAPI):
     # if settings.BACKEND_CORS_ORIGINS:
+    # noinspection PyTypeChecker
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,

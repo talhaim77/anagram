@@ -1,10 +1,4 @@
-from fastapi import Request, FastAPI
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
-from contextlib import asynccontextmanager
-
-
-# backend/dependencies.py
+from fastapi import FastAPI
 
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator

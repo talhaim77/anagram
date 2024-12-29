@@ -1,7 +1,7 @@
 from typing import Optional, Any
 from pathlib import Path
 from pydantic import PostgresDsn, field_validator, ValidationError, Field
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings
 import logging
 
@@ -14,32 +14,31 @@ class Settings(BaseSettings):
     API_VERSION: str = 'v1'
 
     CURRENT_FILE: Path = Path(__file__)
-    WORD_MAX_LENGTH: str = 100
+    WORD_MAX_LENGTH: int = 100
 
     # Database Configuration
-    POSTGRES_HOST: str = ""
-    POSTGRES_DB: str = ""
-    POSTGRES_USER: str = ""
-    POSTGRES_PASSWORD: str = ""
+    POSTGRES_HOST: str
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
 
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="after")
+    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
     @classmethod
-    def assemble_db_uri(cls, v: Optional[str], info: FieldValidationInfo) -> Any:
+    def assemble_db_uri(cls, v: Optional[str], info: ValidationInfo) -> Any:
         if v:
             logger.info("Using provided SQLALCHEMY_DATABASE_URI")
             return v
 
         username = info.data.get("POSTGRES_USER")
         password = info.data.get("POSTGRES_PASSWORD")
-        host = info.data.get("DB_HOST")
-        db_name = info.data.get("DB_NAME")
+        host = info.data.get("POSTGRES_HOST")
+        db_name = info.data.get("POSTGRES_DB")
 
-        logger.info(f"DB_HOST: {host}")
-        logger.info(f"DB_NAME: {db_name}")
+        logger.debug(f"POSTGRES_HOST: {host}, POSTGRES_DB: {db_name}")
 
-        if not username or not password:
+        if not username or not username.strip() or not password or not password.strip():
             logger.error("POSTGRES_USER and POSTGRES_PASSWORD must be set and non-empty")
             raise ValueError("POSTGRES_USER and POSTGRES_PASSWORD must be set and non-empty")
 
@@ -49,11 +48,15 @@ class Settings(BaseSettings):
                 username=username,
                 password=password,
                 host=host,
-                path=db_name
+                path=db_name if db_name else None
             )
             return dsn
         except ValidationError as e:
             raise ValueError(f"Error constructing DSN: {e}") from e
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        _ = self.SQLALCHEMY_DATABASE_URI
 
     class Config:
         """

@@ -1,12 +1,15 @@
 import pytest
 from httpx import AsyncClient
 
-from utils.string_utils import compute_letter_frequency
+from backend.utils.string_utils import compute_letter_frequency
+from backend.settings import settings
+
+BASE_URL = f"http://localhost:8000/api/{settings.API_VERSION}/"
 
 
 @pytest.mark.asyncio
 async def test_get_stats():
-    async with AsyncClient(base_url="http://localhost:8000/api/v1") as ac:
+    async with AsyncClient(base_url=BASE_URL) as ac:
         response = await ac.get("/stats")
     assert response.status_code == 200
     data = response.json()
@@ -24,7 +27,7 @@ async def test_get_stats():
 async def test_get_similar_words(word: str, expected_anagrams: list):
     params = {"word": word}
 
-    async with AsyncClient(base_url="http://localhost:8000/api/v1") as ac:
+    async with AsyncClient(base_url=BASE_URL) as ac:
         response = await ac.get("/similar", params=params)
 
     if response.status_code == 200:

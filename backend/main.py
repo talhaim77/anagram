@@ -1,7 +1,6 @@
 from fastapi import FastAPI, APIRouter
 
 from middlewares import register_middlewares
-from fastapi.middleware.cors import CORSMiddleware
 from settings import settings as app_config
 from lib.lifespan import lifespan
 from api.word_router import router as words_router
