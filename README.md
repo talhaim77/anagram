@@ -16,14 +16,6 @@ To determine if two words are similar, the updated approach uses a **letter freq
 2. **Query the Database**: Use the frequency signature to fetch words with the same signature from the database, excluding the word itself.
 3. **Efficient Async Execution**: Use asynchronous database queries with indexing at the searching columns.
 
-### Time Complexity
-
-- **Word Normalization**: O(n)\, where \(n\) is the length of the word.
-- **Frequency Signature Computation**: O(n), for creating a frequency signature.
-- **Database Query**: O(log(m)), where \(m\) is the number of entries in the database.
-
-Overall, the algorithm achieves an efficient \(O(n + \log(m))\) complexity for querying similar words, making it suitable for real-time applications.
-
 ### Database Migrations
 
 Alembic migration scripts are used for version-controlled schema updates, ensuring consistency and seamless upgrades. To apply migrations, use:
